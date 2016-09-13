@@ -1,3 +1,4 @@
+#!/usr/bin/swift
 //
 //  main.swift
 //  lecture1
