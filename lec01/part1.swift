@@ -1,4 +1,4 @@
-#!/usr/bin/swift
+#!/usr/bin/env swift
 //
 //  main.swift
 //  lecture1
@@ -24,29 +24,29 @@ func J(θ:[Float], x:[Float], y:[Float]) -> Float {
   
   return 1.0/Float(2*m) *
     (0..<m).map{ i in // for each i in 1 to m
-      applyModel(θ, withInput: x[i]) - y[i] // calculate h_θ(x_i) - y_i for all i
+      applyModel(weights: θ, withInput: x[i]) - y[i] // calculate h_θ(x_i) - y_i for all i
       }.map{ value in
         pow(value, 2.0) // now square each value
-      }.reduce(0.0, combine: summation) // finally, sum all values
+      }.reduce(0.0, summation) // finally, sum all values
   
 }
 
 func gradientDescent(theta θ:[Float], x:[Float], y:[Float], alpha α:Float = 0.1, epsilon ε:Float = 0.001) -> [(Float, [Float])] {
   
-  func updateTheta(θ:[Float]) -> [Float] {
+  func updateTheta(_ θ:[Float]) -> [Float] {
     
     let m = y.count
     
     let newθ_0 : Float = θ[0] - α/Float(m) *
       (0..<m).map{ i in // for each i in 1 to m
-        applyModel(θ, withInput: x[i]) - y[i] // calculate h_θ(x_i) - y_i for all i
-        }.reduce(0.0, combine: summation) // finally, sum all values
+        applyModel(weights: θ, withInput: x[i]) - y[i] // calculate h_θ(x_i) - y_i for all i
+        }.reduce(0.0, summation) // finally, sum all values
     
     let part1 = α/Float(m)
     let part2 = (0..<m).map{ i in // for each i in 1 to m
-      (applyModel(θ, withInput: x[i]) - y[i]) * x[i] // calculate (h_θ(x_i) - y_i) * x_i for all i
+      (applyModel(weights: θ, withInput: x[i]) - y[i]) * x[i] // calculate (h_θ(x_i) - y_i) * x_i for all i
     }
-    let part3 = part2.reduce(0.0, combine: summation)
+    let part3 = part2.reduce(0.0, summation)
     
     let newθ_1 : Float = θ[1] - part1 * part3// finally, sum all values
     
@@ -58,20 +58,20 @@ func gradientDescent(theta θ:[Float], x:[Float], y:[Float], alpha α:Float = 0.
   func descend(θ:[Float], previousError:Float, errors:[(Float, [Float])]) -> [(Float, [Float])] {
     
     let newθ = updateTheta(θ)
-    let currentError = J(newθ, x:x, y:y)
-    if (isinf(currentError) || abs(previousError - currentError) <= ε) {
+    let currentError = J(θ: newθ, x:x, y:y)
+    if (currentError.isInfinite || abs(previousError - currentError) <= ε) {
       //print("exiting early \(previousError) \(currentError)")
       return errors
     } else {
       //print("recursing \(previousError - currentError) \(previousError) \(currentError) \(newθ)")
-      return descend(newθ, previousError:currentError, errors: errors + [(currentError, newθ)])
+      return descend(θ: newθ, previousError:currentError, errors: errors + [(currentError, newθ)])
     }
     
   }
   
-  let initialError = J(θ, x:x, y:y)
+  let initialError = J(θ:θ, x:x, y:y)
   
-  return descend(θ, previousError: initialError, errors: [(initialError, θ)])
+  return descend(θ: θ, previousError: initialError, errors: [(initialError, θ)])
   
 }
 
@@ -85,19 +85,3 @@ let y:[Float] = [17.592, 9.1302, 13.662, 11.854, 6.8233, 11.886, 4.3483, 12, 6.5
 
 let results = gradientDescent(theta: theta, x: x, y: y, alpha: 0.01, epsilon: 0.0)
 print(results.last!)
-
-/*
-let m = y.count
-
-let results1 = (0..<m).map{ i in // for each i in 1 to m
-  theta[0] + theta[1]*x[i] - y[i] // calculate h_θ(x_i) - y_i for all i
-  }.map{ value in
-    pow(value, 2.0) // now square each value
-}.reduce(0.0, combine: summation) // finally, sum all values
-
-let results2 = 1.0/(2*Float(m)) * results1
-
-print(results2)
- */
-
-
